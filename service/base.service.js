@@ -1,57 +1,47 @@
-const db = require('../db/mssql')
+const db = require('../db/mysql')
 const moment = require('moment');
 const fs = require('fs')
 
-exports.list = function (_table) {
+list = function (_table) {
     const sql = `select * from ${_table}`;
-    return new Promise(function (resolve, reject) {
-        db.query(sql).then(res => resolve(res), err => reject(err));
-    });
+    return db.query(sql);
 }
 
-exports.listWhere = function (_table, _cond) {
+listWhere = function (_table, _cond) {
     const cond = prepareCond(_cond);
     const sql = `select * from ${_table} where ${cond}`;
     return db.query(sql);
 }
 
-exports.getById = function (_table, _id) {
+getById = function (_table, _id) {
     const sql = `select * from ${_table} where id = ${_id}`;
-    return new Promise(function (resolve, reject) {
-        db.query(sql).then(res => { resolve(res) }, err => reject(err));
-    });
+    return db.query(sql);
 }
 
-exports.insert = function (_table, _data) {
+insert = function (_table, _data) {
     const dataSql = prepareDataInsert(_data);
     const sql = `insert into ${_table} ${dataSql}`;
-    return new Promise(function (resolve, reject) {
-        db.query(sql).then(res => resolve(res), err => reject(err));
-    });
+    return db.query(sql);
 }
 
-exports.update = function (_table, _data, _cond) {
+update = function (_table, _data, _cond) {
     const data = prepareDataUpdate(_data);
     const cond = prepareCond(_cond);
     const sql = `update ${_table} set ${data} where ${cond}`;
-    return new Promise(function (resolve, reject) {
-        db.query(sql).then(res => resolve(res), err => reject(err));
-    });
+    return db.query(sql);
 }
 
-exports.delete = function (_table, _cond) {
+delete = function (_table, _cond) {
     const cond = prepareCond(_cond);
     const sql = `delete from ${_table} where ${cond}`;
-    return new Promise(function (resolve, reject) {
-        db.query(sql).then(res => resolve(res), err => reject(err));
-    });
+    return db.query(sql);
 }
 
-exports.query = function (_sql) {
+query = function (_sql) {
     return db.query(_sql);
 }
 
-exports.saveFile = function (_path, _base64) {
+saveFile = function (_path, _base64) {
     return new Promise(function (resolve, reject) {
         filename = moment().format('MMMMDDYYYYHMMSS');
         binaryData = Buffer.from(_base64, 'base64').toString('binary');
@@ -62,7 +52,7 @@ exports.saveFile = function (_path, _base64) {
     });
 }
 
-exports.deleteFile = function (_path) {
+deleteFile = function (_path) {
     return new Promise(function (resolve, reject) {
         fs.unlink(_path, (err) => {
             if (err) reject(err);
@@ -71,7 +61,7 @@ exports.deleteFile = function (_path) {
     });
 }
 
-function prepareDataInsert(_data) {
+prepareDataInsert = function (_data) {
     let sqlCol = '';
     let sqlData = '';
     for (var k in _data) {
@@ -81,7 +71,7 @@ function prepareDataInsert(_data) {
     return `(${sqlCol.substring(1)} ) values ( ${sqlData.substring(2)} )`;
 }
 
-function prepareDataUpdate(_data) {
+prepareDataUpdate = function (_data) {
     let sql = '';
     for (var k in _data) {
         sql += `, ${k} = '${_data[k]}'`
@@ -89,10 +79,26 @@ function prepareDataUpdate(_data) {
     return sql.substring(2);
 }
 
-function prepareCond(_data) {
+prepareCond = function (_data) {
     let sql = '';
     for (var k in _data) {
         sql += `and ${k} = '${_data[k]}' `
     }
     return sql.substring(4);
+}
+
+
+module.exports = {
+    list,
+    listWhere,
+    getById,
+    insert,
+    update,
+    delete,
+    query,
+    saveFile,
+    deleteFile,
+    prepareDataInsert,
+    prepareDataUpdate,
+    prepareCond
 }
